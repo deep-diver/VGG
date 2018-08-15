@@ -279,9 +279,6 @@ def parse_args(args):
     return parser.parse_args(args)
 
 def main():
-    # cifar100_utils.download(dataset_folder_path=cifar100_dataset_folder_path)
-    # cifar100_utils.preprocess_and_save_data_cifar100(cifar100_dataset_folder_path)
-
     args = sys.argv[1:]
     args = parse_args(args)
 
@@ -292,26 +289,34 @@ def main():
     epochs = args.epochs
     batch_size = args.batch_size
 
-    # if dataset == 'cifar10' and dataset_path == 'none':
-    #     cifar10_utils.download(cifar10_dataset_folder_path)
+    if dataset == 'cifar10':
+        cifar10_utils.download(cifar10_dataset_folder_path)
+    else:
+        cifar100_utils.download(cifar100_dataset_folder_path)
 
-    # if dataset == 'cifar10':
-    #     print('preprocess_and_save_data...')
-    #     cifar10_utils.preprocess_and_save_data(cifar10_dataset_folder_path)
+    if dataset == 'cifar10':
+        print('preprocess_and_save_data...')
+        cifar10_utils.preprocess_and_save_data(cifar10_dataset_folder_path)
 
-    #     print('load features and labels for valid dataset...')
-    #     valid_features, valid_labels = pickle.load(open('preprocess_validation.p', mode='rb'))
+        print('load features and labels for valid dataset...')
+        valid_features, valid_labels = pickle.load(open('cifar10_preprocess_validation.p', mode='rb'))
 
-    #     print('converting valid images to fit into imagenet size...')
-    #     tmpValidFeatures = cifar10_utils.convert_to_imagenet_size(valid_features[:1000])
-    # else:
-    #     sys.exit(0)
+        print('converting valid images to fit into imagenet size...')
+        tmpValidFeatures = cifar10_utils.convert_to_imagenet_size(valid_features[:1000])
+    elif dataset == 'cifar100':
+        print('preprocess_and_save_data...')
+        cifar100_utils.preprocess_and_save_data(cifar100_dataset_folder_path)
 
-    # valid_features, valid_labels = pickle.load(open('cifar100_preprocess_validation.p', mode='rb'))
-    # tmpValidFeatures = cifar100_utils.convert_to_imagenet_size(valid_features[:1000])
+        print('load features and labels for valid dataset...')
+        valid_features, valid_labels = pickle.load(open('cifar100_preprocess_validation.p', mode='rb'))
+
+        print('converting valid images to fit into imagenet size...')
+        tmpValidFeatures = cifar100_utils.convert_to_imagenet_size(valid_features[:1000])        
+    else:
+        sys.exit(0)
+
     vggNet = VGG(dataset='dataset', learning_rate=learning_rate, model_type=model_type)
-    # vggNet.train(epochs, batch_size, (tmpValidFeatures, valid_labels), save_model_path)
-    print(vggNet.label_to_names())
+    vggNet.train(epochs, batch_size, (tmpValidFeatures, valid_labels), save_model_path)
 
 if __name__ == "__main__":
     main()
