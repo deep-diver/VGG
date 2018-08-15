@@ -78,8 +78,10 @@ class VGG:
                             kernel_size=[3,3], stride=1, padding='SAME',
                             activation_fn=tf.nn.relu)
 
-        # if model_type == 'C':
-            # group_3 = tf.layers.conv1d(group_3, filters=256, )
+        if model_type == 'C':
+            group_3 = conv2d(group_3, num_outputs=256,
+                                kernel_size=[1,1], stride=1, padding='SAME',
+                                activation_fn=tf.nn.relu)
 
         if model_type == 'D' or model_type == 'E':
             group_3 = conv2d(group_3, num_outputs=256,
@@ -101,8 +103,10 @@ class VGG:
                             kernel_size=[3,3], stride=1, padding='SAME',
                             activation_fn=tf.nn.relu)    
 
-        # if model_type == 'C':
-            # group_4 = tf.layers.conv1d(group_4, filters=256, )
+        if model_type == 'C':
+            group_4 = conv2d(group_4, num_outputs=512,
+                                kernel_size=[1,1], stride=1, padding='SAME',
+                                activation_fn=tf.nn.relu)
 
         if model_type == 'D' or model_type == 'E':
             group_4 = conv2d(group_4, num_outputs=512,
@@ -124,8 +128,10 @@ class VGG:
                             kernel_size=[3,3], stride=1, padding='SAME',
                             activation_fn=tf.nn.relu)    
 
-        # if model_type == 'C':
-            # group_5 = tf.layers.conv1d(group_5, filters=256, )
+        if model_type == 'C':
+            group_5 = conv2d(group_5, num_outputs=512,
+                                kernel_size=[1,1], stride=1, padding='SAME',
+                                activation_fn=tf.nn.relu)
 
         if model_type == 'D' or model_type == 'E':
             group_5 = conv2d(group_5, num_outputs=512,
