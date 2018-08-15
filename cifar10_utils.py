@@ -86,7 +86,7 @@ def preprocess_and_save_data(dataset_folder_path):
         # - each file for each batch
         _preprocess_and_save(one_hot_encode,
                              features[:-index_of_validation], labels[:-index_of_validation],
-                             'preprocess_batch_' + str(batch_i) + '.p')
+                             'cifar10_preprocess_batch_' + str(batch_i) + '.p')
 
         # unlike the training dataset, validation dataset will be added through all batch dataset
         # - take 10% of the whold dataset of the batch
@@ -99,7 +99,7 @@ def preprocess_and_save_data(dataset_folder_path):
     # preprocess the all stacked validation dataset
     _preprocess_and_save(one_hot_encode,
                          np.array(valid_features), np.array(valid_labels),
-                         'preprocess_validation.p')
+                         'cifar10_preprocess_validation.p')
 
     # load the test dataset
     with open(dataset_folder_path + '/test_batch', mode='rb') as file:
@@ -112,7 +112,7 @@ def preprocess_and_save_data(dataset_folder_path):
     # Preprocess and Save all testing data
     _preprocess_and_save(one_hot_encode,
                          np.array(test_features), np.array(test_labels),
-                         'preprocess_testing.p')
+                         'cifar10_preprocess_testing.p')
 
 def batch_features_labels(features, labels, batch_size):
     """
@@ -126,7 +126,7 @@ def load_preprocess_training_batch(batch_id, batch_size):
     """
     Load the Preprocessed Training data and return them in batches of <batch_size> or less
     """
-    filename = 'preprocess_batch_' + str(batch_id) + '.p'
+    filename = 'cifar10_preprocess_batch_' + str(batch_id) + '.p'
     features, labels = pickle.load(open(filename, mode='rb'))
 
     tmpFeatures = []
