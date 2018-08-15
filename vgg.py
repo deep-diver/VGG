@@ -11,10 +11,15 @@ from tensorflow.contrib.layers import max_pool2d
 from tensorflow.contrib.layers import flatten
 from tensorflow.contrib.layers import fully_connected
 
+cifar10_dataset_folder_path = 'cifar-10-batches-py'
+save_model_path = './image_classification'
+
 class VGG:
-    def __init__(self, dataset):
-        if data == 'cifar10':
+    def __init__(self, learning_rate, dataset='cifar10', model_type='A'):
+        if dataset == 'cifar10':
             self.num_classes = 10
+
+        self.learning_rate = learning_rate
 
         self.input = tf.placeholder(tf.float32, [None, 224, 224, 3], name='input')
         self.label = tf.placeholder(tf.int32, [None, self.num_classes], name='label')
@@ -46,7 +51,7 @@ class VGG:
         if model_type == 'A-LRN':
             group_1 = tf.nn.local_response_normalization(conv1, bias=2, alpha=0.0001,beta=0.75)
 
-        if model_type != 'A' && model_type == 'A-LRN':
+        if model_type != 'A' and model_type == 'A-LRN':
             group_1 = conv2d(group_1, num_outputs=64,
                                 kernel_size=[3,3], stride=1, padding='SAME',
                                 activation_fn=tf.nn.relu)
@@ -58,7 +63,7 @@ class VGG:
                             kernel_size=[3, 3], padding='SAME',
                             activation_fn=tf.nn.relu)
 
-        if model_type != 'A' && model_type == 'A-LRN':
+        if model_type != 'A' and model_type == 'A-LRN':
             group_2 = conv2d(group_2, num_outputs=128,
                             kernel_size=[3,3], stride=1, padding='SAME',
                             activation_fn=tf.nn.relu)   
@@ -73,10 +78,10 @@ class VGG:
                             kernel_size=[3,3], stride=1, padding='SAME',
                             activation_fn=tf.nn.relu)
 
-        if model_type == 'C':
+        # if model_type == 'C':
             # group_3 = tf.layers.conv1d(group_3, filters=256, )
 
-        if model_type == 'D' || model_type == 'E':
+        if model_type == 'D' or model_type == 'E':
             group_3 = conv2d(group_3, num_outputs=256,
                                 kernel_size=[3,3], stride=1, padding='SAME',
                                 activation_fn=tf.nn.relu)     
@@ -96,10 +101,10 @@ class VGG:
                             kernel_size=[3,3], stride=1, padding='SAME',
                             activation_fn=tf.nn.relu)    
 
-        if model_type == 'C':
+        # if model_type == 'C':
             # group_4 = tf.layers.conv1d(group_4, filters=256, )
 
-        if model_type == 'D' || model_type == 'E':
+        if model_type == 'D' or model_type == 'E':
             group_4 = conv2d(group_4, num_outputs=512,
                                 kernel_size=[3,3], stride=1, padding='SAME',
                                 activation_fn=tf.nn.relu)     
@@ -119,10 +124,10 @@ class VGG:
                             kernel_size=[3,3], stride=1, padding='SAME',
                             activation_fn=tf.nn.relu)    
 
-        if model_type == 'C':
+        # if model_type == 'C':
             # group_5 = tf.layers.conv1d(group_5, filters=256, )
 
-        if model_type == 'D' || model_type == 'E':
+        if model_type == 'D' or model_type == 'E':
             group_5 = conv2d(group_5, num_outputs=512,
                                 kernel_size=[3,3], stride=1, padding='SAME',
                                 activation_fn=tf.nn.relu)     
@@ -147,3 +152,85 @@ class VGG:
         out = fully_connected(dr2, num_outputs=self.num_classes, activation_fn=None)
 
         return out
+
+    def train(self, epochs, batch_size, valid_set, save_model_path):
+        tmpValidFeatures, valid_labels = valid_set
+
+        with tf.Session() as sess:
+            print('global_variables_initializer...')
+            sess.run(tf.global_variables_initializer())
+
+            print('starting training ... ')
+            for epoch in range(epochs):
+                n_batches = 5
+
+                for batch_i in range(1, n_batches + 1):
+                    count = 0
+                    total_loss = 0
+
+                    for batch_features, batch_labels in cifar10_utils.load_preprocess_training_batch(batch_i, batch_size):
+                        loss, _ = sess.run([self.cost, self.optimizer],
+                                                feed_dict={self.input: batch_features,
+                                                            self.label: batch_labels})
+                        total_loss = total_loss + loss
+                        count = count + 1
+
+                    print('Epoch {:>2}, CIFAR-10 Batch {}: Loss Average {:.6f}  '.format(epoch + 1, batch_i, total_loss/count), end='')
+
+                    # calculate the mean accuracy over all validation dataset
+                    valid_acc = 0
+                    for batch_valid_features, batch_valid_labels in cifar10_utils.batch_features_labels(tmpValidFeatures, valid_labels, batch_size):
+                        valid_acc += sess.run(self.accuracy,
+                                                feed_dict={self.input:batch_valid_features,
+                                                            self.label:batch_valid_labels})
+
+                    tmp_num = tmpValidFeatures.shape[0]/batch_size
+                    print('Validation Accuracy {:.6f}'.format(valid_acc/tmp_num))
+
+            # Save Model
+            saver = tf.train.Saver()
+            save_path = saver.save(sess, save_model_path)
+
+def parse_args(args):
+    parser = argparse.ArgumentParser(description='Script for running AlexNet')
+
+    parser.add_argument('--dataset', help='imagenet or cifar10, cifar10 is the default', default='cifar10')
+    parser.add_argument('--dataset-path', help='location where the dataset is present', default='none')
+    parser.add_argument('--gpu-mode', help='single or multi', default='single')
+    parser.add_argument('--learning-rate', help='learning rate', default=0.00005)
+    parser.add_argument('--epochs', default=20)
+    parser.add_argument('--batch-size', default=64)
+
+    return parser.parse_args(args)
+
+def main():
+    args = sys.argv[1:]
+    args = parse_args(args)
+
+    dataset = args.dataset
+    dataset_path = args.dataset_path
+    gpu_mode = args.gpu_mode
+    learning_rate = args.learning_rate
+    epochs = args.epochs
+    batch_size = args.batch_size
+
+    if dataset == 'cifar10' and dataset_path == 'none':
+        cifar10_utils.download(cifar10_dataset_folder_path)
+
+    if dataset == 'cifar10':
+        print('preprocess_and_save_data...')
+        cifar10_utils.preprocess_and_save_data(cifar10_dataset_folder_path)
+
+        print('load features and labels for valid dataset...')
+        valid_features, valid_labels = pickle.load(open('preprocess_validation.p', mode='rb'))
+
+        print('converting valid images to fit into imagenet size...')
+        tmpValidFeatures = cifar10_utils.convert_to_imagenet_size(valid_features[:1000])
+    else:
+        sys.exit(0)
+
+    vgg = VGG(learning_rate)
+    # alexNet.train(epochs, batch_size, (tmpValidFeatures, valid_labels), save_model_path)
+
+if __name__ == "__main__":
+    main()
