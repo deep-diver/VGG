@@ -4,6 +4,9 @@ This repository comes with VGG implementation in TensorFlow. VGG took the 2nd pl
 
 Currently, the VGG models in this repo have been tested with CIFAR-10 and CIFAR-100 dataset. As an indivisual deep learner, it is hard to manage such a huge dataset, ImageNet. However, I will keep working on the ImageNet dataset, please wait for it.
 
+![VGG16](https://heuritech.files.wordpress.com/2016/02/vgg16.png?w=940)
+VGG16 model example figure from [Ref.](https://blog.heuritech.com/2016/02/29/a-brief-report-of-the-heuritech-deep-learning-meetup-5/)
+
 > **VGG:** Visual Geometry Group @Oxford University
 
 ## Required Packages
